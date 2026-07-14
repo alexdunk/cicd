@@ -12,7 +12,7 @@ import { buildRoutes } from './endpoints/builds.ts';
 import { deploymentRoutes } from './endpoints/deployments.ts';
 import { healthRoutes } from './endpoints/health.ts';
 import { createRouter } from './router.ts';
-import type { ApiRequest, ApiResponse, Handler, RequestContext } from './types.ts';
+import type { ApiRequest, ApiResponse } from './types.ts';
 
 /** Everything the pipeline needs; supplied by AWS adapters in production and fakes locally. */
 export interface Dependencies {
@@ -26,6 +26,9 @@ export interface Dependencies {
   functions: FunctionCodeUpdater;
 }
 
+/** The request pipeline: one transport-neutral request in, one response out. */
+export type Pipeline = (req: ApiRequest) => Promise<ApiResponse>;
+
 /**
  * THE composition root for the request pipeline. Decorator order is defined
  * here and nowhere else, outermost first:
@@ -35,8 +38,11 @@ export interface Dependencies {
  * Logging is outermost so every request (including auth failures) is logged.
  * Error handling sits inside logging so error responses still get logged, and
  * outside authorization so auth errors become clean 401/403 JSON responses.
+ *
+ * Each call gets a fresh per-request context; the logging and authorization
+ * decorators fill it in.
  */
-export function createPipeline(deps: Dependencies): Handler {
+export function createPipeline(deps: Dependencies): Pipeline {
   const buildService = new BuildService(deps.builds, deps.artifacts, deps.clock, deps.ids);
   const deploymentService = new DeploymentService(
     deps.deployments,
@@ -52,22 +58,10 @@ export function createPipeline(deps: Dependencies): Handler {
     ...deploymentRoutes(deploymentService),
   ]);
 
-  return withLogging(
+  const handler = withLogging(
     deps.logger,
     deps.ids,
   )(withErrorHandling()(withAuthorization(deps.clients)(router)));
-}
 
-/** Fresh per-request context; the logging and authorization decorators fill it in. */
-export function emptyContext(deps: Dependencies): RequestContext {
-  return { requestId: '', logger: deps.logger, client: null };
-}
-
-/** Convenience for callers that own the context lifecycle (Lambda entry, dev server, tests). */
-export async function handleRequest(
-  pipeline: Handler,
-  deps: Dependencies,
-  req: ApiRequest,
-): Promise<ApiResponse> {
-  return pipeline(req, emptyContext(deps));
+  return (req) => handler(req, { requestId: '', logger: deps.logger, client: null });
 }

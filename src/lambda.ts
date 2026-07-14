@@ -12,7 +12,7 @@ import { LambdaFunctionUpdater } from './adapters/aws/lambda-function-updater.ts
 import { S3ArtifactStore } from './adapters/aws/s3-artifact-store.ts';
 import { systemClock, uuidGenerator } from './adapters/system.ts';
 import { fromAlbEvent, toAlbResult } from './http/alb.ts';
-import { createPipeline, handleRequest, type Dependencies } from './http/pipeline.ts';
+import { createPipeline, type Dependencies } from './http/pipeline.ts';
 import { createConsoleLogger } from './observability/console-logger.ts';
 import type { LogLevel } from './ports/logger.ts';
 
@@ -49,10 +49,9 @@ function createDependencies(): Dependencies {
   };
 }
 
-const deps = createDependencies();
-const pipeline = createPipeline(deps);
+const pipeline = createPipeline(createDependencies());
 
 export async function handler(event: ALBEvent): Promise<ALBResult> {
-  const response = await handleRequest(pipeline, deps, fromAlbEvent(event));
+  const response = await pipeline(fromAlbEvent(event));
   return toAlbResult(response);
 }

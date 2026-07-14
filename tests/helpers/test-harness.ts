@@ -6,7 +6,7 @@ import {
   FakeDeploymentStore,
 } from '../../src/adapters/fake/fake-stores.ts';
 import { hashToken, type ApiClient } from '../../src/domain/client.ts';
-import { createPipeline, handleRequest, type Dependencies } from '../../src/http/pipeline.ts';
+import { createPipeline, type Dependencies } from '../../src/http/pipeline.ts';
 import type { ApiRequest, ApiResponse } from '../../src/http/types.ts';
 import type { Logger, LogLevel } from '../../src/ports/logger.ts';
 
@@ -99,7 +99,7 @@ export function createHarness(): Harness {
     deployments,
     artifacts,
     send: (req) =>
-      handleRequest(pipeline, deps, {
+      pipeline({
         headers: { authorization: `Bearer ${TEST_TOKEN}` },
         query: {},
         body: null,

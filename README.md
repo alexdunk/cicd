@@ -12,8 +12,7 @@ Runs as a single AWS Lambda behind an Application Load Balancer target group. Me
 ```bash
 npm ci          # setup (Node 24, see .nvmrc)
 npm run dev     # local server with in-memory AWS fakes — no AWS account needed
-npm run smoke   # deterministic end-to-end check of the whole journey
-npm run check   # full verification (format, lint, typecheck, tests, build, smoke, guardrails)
+npm run check   # full verification (format, lint, typecheck, tests, build, guardrails)
 ```
 
 `npm run dev` prints its base URL and a seeded token (`local-dev-token`). Example:

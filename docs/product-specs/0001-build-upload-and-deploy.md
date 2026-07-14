@@ -2,7 +2,7 @@
 
 - Status: implemented and verified (2026-07-14)
 - Implementation: `src/http/endpoints/builds.ts`, `src/http/endpoints/deployments.ts`, `src/services/`
-- Tests: `tests/integration/end-to-end.test.ts` (journey), `tests/unit/api-pipeline.test.ts` (edge cases), `npm run smoke`
+- Tests: `tests/integration/end-to-end.test.ts` (journey), `tests/unit/api-pipeline.test.ts` (edge cases)
 
 ## Users and Scenario
 

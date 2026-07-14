@@ -8,7 +8,7 @@ import {
 } from '../adapters/fake/fake-stores.ts';
 import { systemClock, uuidGenerator } from '../adapters/system.ts';
 import { hashToken } from '../domain/client.ts';
-import { createPipeline, handleRequest, type Dependencies } from '../http/pipeline.ts';
+import { createPipeline, type Dependencies } from '../http/pipeline.ts';
 import type { ApiRequest } from '../http/types.ts';
 import { createConsoleLogger } from '../observability/console-logger.ts';
 
@@ -96,7 +96,7 @@ export async function startDevServer(port: number): Promise<DevServer> {
       query: Object.fromEntries(url.searchParams),
       body: await drainBody(req),
     };
-    const response = await handleRequest(pipeline, deps, apiRequest);
+    const response = await pipeline(apiRequest);
     res.writeHead(response.status, { 'content-type': 'application/json', ...response.headers });
     res.end(JSON.stringify(response.body));
   }

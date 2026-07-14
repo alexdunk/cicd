@@ -1,9 +1,8 @@
 import { badRequest } from '../../domain/errors.ts';
 import type { DeploymentService } from '../../services/deployment-service.ts';
-import { createDeploymentSchema, parseBody } from '../request-schemas.ts';
+import { createDeploymentSchema, parseBody, parseLimit } from '../request-schemas.ts';
 import type { Route } from '../router.ts';
 import { jsonResponse } from '../types.ts';
-import { parseLimit } from './builds.ts';
 import { requireDeployTarget, requireScope } from './authz.ts';
 
 export function deploymentRoutes(service: DeploymentService): Route[] {

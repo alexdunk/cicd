@@ -4,13 +4,7 @@
  * thrown becomes an opaque 500.
  */
 export type ErrorCode =
-  | 'bad_request'
-  | 'unauthorized'
-  | 'forbidden'
-  | 'not_found'
-  | 'conflict'
-  | 'deploy_failed'
-  | 'internal_error';
+  'bad_request' | 'unauthorized' | 'forbidden' | 'not_found' | 'conflict' | 'internal_error';
 
 const STATUS_BY_CODE: Record<ErrorCode, number> = {
   bad_request: 400,
@@ -18,7 +12,6 @@ const STATUS_BY_CODE: Record<ErrorCode, number> = {
   forbidden: 403,
   not_found: 404,
   conflict: 409,
-  deploy_failed: 502,
   internal_error: 500,
 };
 

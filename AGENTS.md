@@ -14,7 +14,7 @@ A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment 
 | `src/lambda.ts` / `src/local/`             | Production and local composition roots.                                                                 |
 | `infra/`                                   | AWS CDK stack (table, bucket, Lambda, ALB).                                                             |
 | `tests/`                                   | Unit, pipeline, and integration tests.                                                                  |
-| `scripts/`                                 | Build, smoke, docs checks, route generation, client provisioning.                                       |
+| `scripts/`                                 | Build, docs checks, route generation, client provisioning.                                              |
 | `docs/`                                    | Knowledge base (see links below).                                                                       |
 
 ## Commands

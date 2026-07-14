@@ -30,6 +30,19 @@ export const createDeploymentSchema = z.object({
     .regex(/^[a-zA-Z0-9-_]+$/, 'targetFunction must be a plain Lambda function name'),
 });
 
+const DEFAULT_LIST_LIMIT = 50;
+const MAX_LIST_LIMIT = 200;
+
+/** Parses the optional `limit` query parameter shared by the list endpoints. */
+export function parseLimit(raw: string | undefined): number {
+  if (raw === undefined) return DEFAULT_LIST_LIMIT;
+  const limit = Number(raw);
+  if (!Number.isInteger(limit) || limit < 1 || limit > MAX_LIST_LIMIT) {
+    throw badRequest(`Query parameter "limit" must be an integer between 1 and ${MAX_LIST_LIMIT}.`);
+  }
+  return limit;
+}
+
 /** Parses a JSON request body against a schema, mapping failures to 400s. */
 export function parseBody<T>(schema: z.ZodType<T>, rawBody: string | null): T {
   if (rawBody === null || rawBody.trim() === '') {

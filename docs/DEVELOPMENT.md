@@ -14,21 +14,20 @@ npm ci
 
 ## Commands
 
-| Command                           | What it does                                                                                                                |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                     | Starts the local dev server (in-memory fakes, no AWS). Prints base URL + token as JSON.                                     |
-| `npm run smoke`                   | Deterministic end-to-end check: register → upload → complete → deploy → status → history → 401.                             |
-| `npm test`                        | Unit + integration tests (vitest). `npm run test:watch` for watch mode.                                                     |
-| `npm run lint`                    | ESLint (type-aware).                                                                                                        |
-| `npm run typecheck`               | `tsc --noEmit` (strict).                                                                                                    |
-| `npm run format` / `format:check` | Prettier write / verify.                                                                                                    |
-| `npm run build`                   | Bundles the Lambda handler to `dist/lambda/index.mjs` (esbuild).                                                            |
-| `npm run check:architecture`      | dependency-cruiser rules from `.dependency-cruiser.cjs`.                                                                    |
-| `npm run check:docs`              | Required docs exist, links resolve, AGENTS.md commands exist, route inventory fresh.                                        |
-| `npm run generate:routes`         | Regenerates `docs/generated/routes.md` from route definitions.                                                              |
-| `npm run check`                   | **Full verification**: format, lint, typecheck, tests, build, smoke, architecture, docs. CI runs exactly this plus `synth`. |
-| `npm run synth`                   | CDK synth of `infra/` (validates infrastructure code; needs no credentials).                                                |
-| `npm run create-client`           | Generates a client token + DynamoDB item; `--write` puts it to a real table.                                                |
+| Command                           | What it does                                                                                                         |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `npm run dev`                     | Starts the local dev server (in-memory fakes, no AWS). Prints base URL + token as JSON.                              |
+| `npm test`                        | Unit + integration tests (vitest), incl. the end-to-end journey test. `npm run test:watch` for watch mode.           |
+| `npm run lint`                    | ESLint (type-aware).                                                                                                 |
+| `npm run typecheck`               | `tsc --noEmit` (strict).                                                                                             |
+| `npm run format` / `format:check` | Prettier write / verify.                                                                                             |
+| `npm run build`                   | Bundles the Lambda handler to `dist/lambda/index.mjs` (esbuild).                                                     |
+| `npm run check:architecture`      | dependency-cruiser rules from `.dependency-cruiser.cjs`.                                                             |
+| `npm run check:docs`              | Required docs exist, links resolve, AGENTS.md commands exist, route inventory fresh.                                 |
+| `npm run generate:routes`         | Regenerates `docs/generated/routes.md` from route definitions.                                                       |
+| `npm run check`                   | **Full verification**: format, lint, typecheck, tests, build, architecture, docs. CI runs exactly this plus `synth`. |
+| `npm run synth`                   | CDK synth of `infra/` (validates infrastructure code; needs no credentials).                                         |
+| `npm run create-client`           | Generates a client token + DynamoDB item; `--write` puts it to a real table.                                         |
 
 ## Local Development
 
@@ -78,7 +77,7 @@ All local state is in-memory and per-process; the dev server and tests bind ephe
 
 ## Troubleshooting
 
-- **`npm run smoke` fails at "upload package"**: the fake S3 accepts only PUT; check the printed step and rerun `npm run smoke`.
+- **Upload to the presigned URL fails locally**: the fake S3 accepts only PUT.
 - **401 from every endpoint locally**: the token must match `LOCAL_DEV_TOKEN` (default `local-dev-token`).
 - **`check:docs` says routes.md is stale**: run `npm run generate:routes` and commit.
 - **Cold-start crash `Missing required environment variable`**: deploy via the CDK stack, which sets `TABLE_NAME`/`ARTIFACT_BUCKET`.

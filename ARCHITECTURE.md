@@ -69,7 +69,7 @@ Rules enforced by `npm run check:architecture` (`.dependency-cruiser.cjs`):
 Exactly two, both calling the same `createPipeline()`:
 
 - `src/lambda.ts`: real AWS adapters; config from environment variables (fails fast at cold start when missing). **Must never import fakes** (enforced).
-- `src/local/dev-server.ts`: fakes only; **must never import `src/adapters/aws`** (enforced). Used by `npm run dev`, `npm run smoke`, and the integration test.
+- `src/local/dev-server.ts`: fakes only; **must never import `src/adapters/aws`** (enforced). Used by `npm run dev` and the integration test.
 
 ## Data Model
 
