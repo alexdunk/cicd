@@ -5,7 +5,7 @@ import type { RequestContext } from '../types.ts';
 /**
  * Endpoint-level authorization helpers. The authorizer decorator establishes
  * *who* is calling; these checks decide *what* that client may do, and they
- * live next to the protected operations per GUARDRAILS.md.
+ * live next to the operations they protect.
  */
 export function requireScope(ctx: RequestContext, scope: Scope): ApiClient {
   const client = ctx.client;

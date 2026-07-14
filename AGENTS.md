@@ -44,7 +44,12 @@ A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment 
 - Auth model, secrets, trust boundaries: [docs/SECURITY.md](docs/SECURITY.md)
 - Decisions: [docs/design-docs/INDEX.md](docs/design-docs/INDEX.md) · Specs: [docs/product-specs/INDEX.md](docs/product-specs/INDEX.md)
 - Plans: [docs/exec-plans/active/README.md](docs/exec-plans/active/README.md) · Debt: [docs/exec-plans/tech-debt.md](docs/exec-plans/tech-debt.md)
-- How to work here (plan → implement → verify → hand off): [docs/agent-bootstrap/OPERATING-LOOP.md](docs/agent-bootstrap/OPERATING-LOOP.md)
+
+## How to Work Here
+
+Orient from this file and follow links only into the area relevant to the task. Establish evidence before implementing: reproduce a bug as a focused failing test, or write observable acceptance criteria for a feature. Verify from narrow to broad — the focused test first, `npm run check` before handoff.
+
+For work that spans multiple subsystems, changes architecture, public contracts, or security posture, or will continue across sessions, keep a plan in `docs/exec-plans/active/` and move it to `completed/` with its outcome. Escalate to a human when a decision changes product scope, creates a new security or cost posture, requires destructive/irreversible actions, or is an architectural fork with meaningfully different long-term consequences.
 
 ## Definition of Done
 

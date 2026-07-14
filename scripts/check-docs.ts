@@ -29,7 +29,7 @@ const REQUIRED_FILES = [
 for (const file of REQUIRED_FILES) {
   if (!existsSync(file)) {
     problems.push(
-      `${file}: required knowledge file is missing. See docs/agent-bootstrap/KNOWLEDGE.md.`,
+      `${file}: required knowledge file is missing. See the Knowledge Base section of AGENTS.md.`,
     );
   } else {
     const content = await readFile(file, 'utf8');
