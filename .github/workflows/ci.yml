@@ -1,0 +1,22 @@
+# CI runs the same repository-owned commands agents run locally (npm run check).
+# See docs/DEVELOPMENT.md#commands. No AWS credentials are needed.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - name: CDK synth (validates infrastructure code)
+        run: npm run synth

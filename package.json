@@ -1,0 +1,52 @@
+{
+  "name": "cicd-deploy-api",
+  "version": "0.1.0",
+  "description": "CI/CD build upload and Lambda deployment API",
+  "scripts": {
+    "test": "vitest run",
+    "dev": "tsx src/local/main.ts",
+    "smoke": "tsx scripts/smoke.ts",
+    "test:watch": "vitest",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "build": "node scripts/build.mjs",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build && npm run smoke && npm run check:architecture && npm run check:docs",
+    "check:architecture": "depcruise src",
+    "check:docs": "tsx scripts/check-docs.ts",
+    "synth": "cdk synth --app 'tsx infra/app.ts' --quiet",
+    "generate:routes": "tsx scripts/generate-routes.ts",
+    "create-client": "tsx scripts/create-client.ts"
+  },
+  "license": "UNLICENSED",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1086.0",
+    "@aws-sdk/client-lambda": "3.1086.0",
+    "@aws-sdk/client-s3": "3.1086.0",
+    "@aws-sdk/lib-dynamodb": "3.1086.0",
+    "@aws-sdk/s3-request-presigner": "3.1086.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/aws-lambda": "8.10.162",
+    "@types/node": "26.1.1",
+    "aws-cdk": "2.1131.0",
+    "aws-cdk-lib": "2.261.0",
+    "constructs": "10.6.0",
+    "dependency-cruiser": "18.1.0",
+    "esbuild": "0.28.1",
+    "eslint": "10.7.0",
+    "prettier": "3.9.5",
+    "tsx": "4.23.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.64.0",
+    "vitest": "4.1.10"
+  }
+}
