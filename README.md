@@ -24,7 +24,20 @@ curl -s -X POST "$BASE/v1/builds" \
   -d '{"name":"my-service","gitCommit":"abc1234"}'
 ```
 
-The API routes are listed in [docs/generated/routes.md](docs/generated/routes.md). The full walkthrough, configuration, and AWS deployment steps are in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+## API Routes
+
+| Method | Path                              | Requires                               |
+| ------ | --------------------------------- | -------------------------------------- |
+| GET    | `/healthz`                        | nothing (ALB health check)             |
+| POST   | `/v1/builds`                      | `upload` scope                         |
+| POST   | `/v1/builds/{buildId}/complete`   | `upload` scope                         |
+| GET    | `/v1/builds/{buildId}`            | `upload` scope                         |
+| GET    | `/v1/builds`                      | `upload` scope                         |
+| POST   | `/v1/deployments`                 | `deploy` scope + allow-listed function |
+| GET    | `/v1/deployments/{deploymentId}`  | `deploy` scope                         |
+| GET    | `/v1/deployments?function=<name>` | `deploy` scope                         |
+
+Every route except `/healthz` needs `Authorization: Bearer <token>`. Route definitions live in `src/http/endpoints/`; request schemas in `src/http/request-schemas.ts`. The full walkthrough, configuration, and AWS deployment steps are in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 ## Documentation
 

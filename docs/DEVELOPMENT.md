@@ -23,8 +23,7 @@ npm ci
 | `npm run format` / `format:check` | Prettier write / verify.                                                                                             |
 | `npm run build`                   | Bundles the Lambda handler to `dist/lambda/index.mjs` (esbuild).                                                     |
 | `npm run check:architecture`      | dependency-cruiser rules from `.dependency-cruiser.cjs`.                                                             |
-| `npm run check:docs`              | Required docs exist, links resolve, AGENTS.md commands exist, route inventory fresh.                                 |
-| `npm run generate:routes`         | Regenerates `docs/generated/routes.md` from route definitions.                                                       |
+| `npm run check:docs`              | Required docs exist, links resolve, AGENTS.md commands exist.                                                        |
 | `npm run check`                   | **Full verification**: format, lint, typecheck, tests, build, architecture, docs. CI runs exactly this plus `synth`. |
 | `npm run synth`                   | CDK synth of `infra/` (validates infrastructure code; needs no credentials).                                         |
 | `npm run create-client`           | Generates a client token + DynamoDB item; `--write` puts it to a real table.                                         |
@@ -79,6 +78,5 @@ All local state is in-memory and per-process; the dev server and tests bind ephe
 
 - **Upload to the presigned URL fails locally**: the fake S3 accepts only PUT.
 - **401 from every endpoint locally**: the token must match `LOCAL_DEV_TOKEN` (default `local-dev-token`).
-- **`check:docs` says routes.md is stale**: run `npm run generate:routes` and commit.
 - **Cold-start crash `Missing required environment variable`**: deploy via the CDK stack, which sets `TABLE_NAME`/`ARTIFACT_BUCKET`.
 - **Deploy recorded as `failed` with `ResourceNotFoundException`**: the target function does not exist (locally: use `demo-function`; deployed: function must exist and match the IAM prefix).

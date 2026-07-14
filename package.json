@@ -15,7 +15,6 @@
     "check:architecture": "depcruise src",
     "check:docs": "tsx scripts/check-docs.ts",
     "synth": "cdk synth --app 'tsx infra/app.ts' --quiet",
-    "generate:routes": "tsx scripts/generate-routes.ts",
     "create-client": "tsx scripts/create-client.ts"
   },
   "license": "UNLICENSED",

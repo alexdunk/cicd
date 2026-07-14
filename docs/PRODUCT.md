@@ -23,7 +23,7 @@ Users are **machine clients**: CI pipelines and deployment tooling. No human-fac
 4. `POST /v1/deployments` with `buildId` + `targetFunction` updates the target function's code from S3 and records every state transition.
 5. `GET /v1/deployments/{deploymentId}` and `GET /v1/deployments?function=<name>` return status and history.
 
-Acceptance criteria live in [product-specs/0001-build-upload-and-deploy.md](product-specs/0001-build-upload-and-deploy.md). The full route list is generated in [generated/routes.md](generated/routes.md).
+Acceptance criteria live in [product-specs/0001-build-upload-and-deploy.md](product-specs/0001-build-upload-and-deploy.md). The full route list is in the [README](../README.md#api-routes).
 
 ## Scope and Non-Goals
 

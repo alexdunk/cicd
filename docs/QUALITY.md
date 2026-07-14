@@ -18,7 +18,7 @@
 
 - `npm run check`: passes end to end; 42 tests across 6 files, 0 failures.
 - `npm run synth`: synthesizes the stack without credentials (deprecation warnings from within aws-cdk-lib are expected and harmless).
-- Guardrail failure modes exercised intentionally: a forbidden `domain → adapters` import fails `check:architecture` naming the rule and doc; a stale `docs/generated/routes.md` fails `check:docs` with the regeneration command.
+- Guardrail failure modes exercised intentionally: a forbidden `domain → adapters` import fails `check:architecture` naming the rule and doc.
 - Secret/path hygiene: tracked files contain no credentials and no machine-specific absolute paths (checked via grep during bootstrap).
 
 ## Known Gaps

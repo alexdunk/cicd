@@ -1,14 +1,12 @@
 import { readdir, readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
-import { renderRoutesMarkdown } from './generate-routes.ts';
 
 /**
  * Documentation guardrails (npm run check:docs):
  * 1. required knowledge files exist and are not empty placeholders;
  * 2. relative markdown links in tracked docs resolve;
- * 3. every `npm run <script>` mentioned in AGENTS.md exists in package.json;
- * 4. docs/generated/routes.md matches the current route definitions.
+ * 3. every `npm run <script>` mentioned in AGENTS.md exists in package.json.
  */
 const problems: string[] = [];
 
@@ -23,7 +21,6 @@ const REQUIRED_FILES = [
   'docs/design-docs/INDEX.md',
   'docs/product-specs/INDEX.md',
   'docs/exec-plans/tech-debt.md',
-  'docs/generated/routes.md',
 ];
 
 for (const file of REQUIRED_FILES) {
@@ -80,14 +77,6 @@ for (const match of agents.matchAll(/npm run ([a-z0-9:_-]+)/g)) {
       `AGENTS.md references "npm run ${script}" but package.json has no such script. Update AGENTS.md or add the script.`,
     );
   }
-}
-
-// Generated route inventory must be current.
-const routesOnDisk = await readFile('docs/generated/routes.md', 'utf8').catch(() => '');
-if (routesOnDisk !== renderRoutesMarkdown()) {
-  problems.push(
-    'docs/generated/routes.md is stale. Run: npm run generate:routes and commit the result.',
-  );
 }
 
 if (problems.length > 0) {

@@ -14,7 +14,7 @@ A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment 
 | `src/lambda.ts` / `src/local/`             | Production and local composition roots.                                                                 |
 | `infra/`                                   | AWS CDK stack (table, bucket, Lambda, ALB).                                                             |
 | `tests/`                                   | Unit, pipeline, and integration tests.                                                                  |
-| `scripts/`                                 | Build, docs checks, route generation, client provisioning.                                              |
+| `scripts/`                                 | Build, docs checks, client provisioning.                                                                |
 | `docs/`                                    | Knowledge base (see links below).                                                                       |
 
 ## Commands
@@ -33,7 +33,7 @@ A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment 
 3. Parse all external input with zod at the boundary: requests in `src/http/request-schemas.ts`, DynamoDB rows in the store adapters.
 4. Respect dependency direction (domain ← ports ← services ← http ← entrypoints); `npm run check:architecture` enforces it.
 5. Every deployment state change goes through `transitionDeployment` so the audit trail stays complete.
-6. Regenerate `docs/generated/routes.md` (`npm run generate:routes`) when routes change; update affected docs in the same change.
+6. When routes change, update the route table in `README.md` and other affected docs in the same change.
 
 ## Knowledge Base
 
