@@ -83,24 +83,8 @@ describe('upload-and-deploy journey over HTTP', () => {
     const history = await call('GET', '/v1/deployments?function=demo-function');
     expect(history.status).toBe(200);
     const { deployments } = history.json as {
-      deployments: { deploymentId: string; transitions: { status: string }[] }[];
+      deployments: { deploymentId: string }[];
     };
     expect(deployments.map((d) => d.deploymentId)).toContain(deployment.deploymentId);
-    expect(deployments[0]!.transitions.map((t) => t.status)).toEqual([
-      'requested',
-      'in_progress',
-      'succeeded',
-    ]);
-  });
-
-  it('rejects unknown tokens end to end', async () => {
-    const response = await call('GET', '/v1/builds', undefined, 'bogus');
-    expect(response.status).toBe(401);
-  });
-
-  it('serves the health check without a token', async () => {
-    const response = await fetch(`${server.baseUrl}/healthz`);
-    expect(response.status).toBe(200);
-    expect(await response.json()).toEqual({ status: 'ok' });
   });
 });

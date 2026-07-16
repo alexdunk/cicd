@@ -2,13 +2,19 @@ import { describe, expect, it } from 'vitest';
 import { AppError } from '../../src/domain/errors.ts';
 import { createRouter } from '../../src/http/router.ts';
 import { jsonResponse, type ApiRequest, type RequestContext } from '../../src/http/types.ts';
-import { captureLogger } from '../helpers/test-harness.ts';
 
 function request(method: string, path: string): ApiRequest {
   return { method, path, headers: {}, query: {}, body: null };
 }
 
-const ctx: RequestContext = { requestId: 'r', logger: captureLogger([]), client: null };
+const noopLogger: RequestContext['logger'] = {
+  log() {},
+  with() {
+    return noopLogger;
+  },
+};
+
+const ctx: RequestContext = { requestId: 'r', logger: noopLogger, client: null };
 
 describe('router', () => {
   const router = createRouter([

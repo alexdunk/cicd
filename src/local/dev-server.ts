@@ -11,6 +11,7 @@ import { hashToken } from '../domain/client.ts';
 import { createPipeline, type Dependencies } from '../http/pipeline.ts';
 import type { ApiRequest } from '../http/types.ts';
 import { createConsoleLogger } from '../observability/console-logger.ts';
+import type { LogLevel } from '../ports/logger.ts';
 
 /**
  * Local development server. Emulates the whole stack in one process with no
@@ -35,7 +36,7 @@ export interface DevServer {
 }
 
 export async function startDevServer(port: number): Promise<DevServer> {
-  const logger = createConsoleLogger((process.env['LOG_LEVEL'] as never) ?? 'info');
+  const logger = createConsoleLogger((process.env['LOG_LEVEL'] as LogLevel) ?? 'info');
   const clients = new FakeClientStore();
   clients.seed(hashToken(LOCAL_TOKEN), {
     clientId: 'local-dev',

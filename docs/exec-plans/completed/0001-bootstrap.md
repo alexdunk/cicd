@@ -10,14 +10,14 @@ Delivered in one slice; all verification commands pass (see docs/QUALITY.md for 
 
 - Decorator pipeline (logging → error → auth → router) with the order fixed in `src/http/pipeline.ts`; each decorator unit-tested.
 - Full journey implemented and tested: register → presigned upload → complete → deploy (`UpdateFunctionCode`) → status/history, with per-transition audit records.
-- Fakes for S3/DynamoDB/Lambda control plane power `npm run dev`, `npm run smoke`, and the integration test; no AWS needed locally; ephemeral ports keep worktrees isolated.
+- Fakes for S3/DynamoDB/Lambda control plane power `npm run dev` and the integration test; no AWS needed locally; ephemeral ports keep worktrees isolated.
 - CDK stack (`infra/`): DynamoDB table + GSI, artifact bucket, API Lambda, ALB target group with `/healthz` health check; `npm run synth` validates in CI.
-- Guardrails: dependency-cruiser architecture rules, docs checks (links, required files, command references, generated-route freshness), CI running `npm run check` + synth.
+- Guardrails: dependency-cruiser architecture rules, docs checks (links, required files, command references), CI running `npm run check` + synth.
 
 ## Decisions Made (recorded as design docs 0001–0004)
 
-Decorator pipeline shape; single-table DynamoDB layout; synchronous deploys; CDK for infrastructure. Conventional defaults chosen without escalation: 90-day artifact retention, 15-minute presign TTL, `deploy-target-` IAM prefix, HTTP fallback listener for cert-less test deploys (flagged in SECURITY.md and tech-debt).
+Decorator pipeline shape; single-table DynamoDB layout; synchronous deploys; CDK for infrastructure. Conventional defaults chosen without escalation: 90-day artifact retention, 15-minute presign TTL, and the `deploy-target-` IAM prefix. The later shared-ingress design made production HTTPS-only.
 
 ## Follow-Up Work
 
-Tracked in [../tech-debt.md](../tech-debt.md): HTTPS enforcement, pagination cursors, real-AWS adapter tests, vulnerability scanning, deployment concurrency.
+Tracked in [../tech-debt.md](../tech-debt.md): pagination cursors, real-AWS adapter tests, vulnerability scanning, deployment concurrency.

@@ -27,7 +27,7 @@ export interface Dependencies {
 }
 
 /** The request pipeline: one transport-neutral request in, one response out. */
-export type Pipeline = (req: ApiRequest) => Promise<ApiResponse>;
+type Pipeline = (req: ApiRequest) => Promise<ApiResponse>;
 
 /**
  * THE composition root for the request pipeline. Decorator order is defined

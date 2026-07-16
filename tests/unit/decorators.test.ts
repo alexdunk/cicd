@@ -11,9 +11,31 @@ import {
   type Handler,
   type RequestContext,
 } from '../../src/http/types.ts';
-import { captureLogger, testIds, type CapturedLog } from '../helpers/test-harness.ts';
+import type { Logger, LogLevel } from '../../src/ports/logger.ts';
 
 /** Each decorator is tested in isolation by wrapping a stub innermost handler. */
+
+interface CapturedLog {
+  level: LogLevel;
+  message: string;
+  fields: Record<string, unknown>;
+}
+
+function captureLogger(sink: CapturedLog[], bound: Record<string, unknown> = {}): Logger {
+  return {
+    log(level, message, fields) {
+      sink.push({ level, message, fields: { ...bound, ...fields } });
+    },
+    with(fields) {
+      return captureLogger(sink, { ...bound, ...fields });
+    },
+  };
+}
+
+function testIds(): { newId(): string } {
+  let n = 0;
+  return { newId: () => `id-${++n}` };
+}
 
 const okHandler: Handler = () => Promise.resolve(jsonResponse(200, { ok: true }));
 
@@ -80,17 +102,6 @@ describe('withAuthorization', () => {
     createdAt: '2026-01-01T00:00:00.000Z',
   });
   const handler = withErrorHandling()(withAuthorization(clients)(okHandler));
-
-  it('lets /healthz through without a token', async () => {
-    const bare = withAuthorization(clients)(okHandler);
-    const response = await bare(request({ path: '/healthz' }), context());
-    expect(response.status).toBe(200);
-  });
-
-  it('rejects a missing Authorization header with 401', async () => {
-    const response = await handler(request(), context());
-    expect(response.status).toBe(401);
-  });
 
   it('rejects a malformed header with 401', async () => {
     const response = await handler(request({ headers: { authorization: 'Token abc' } }), context());

@@ -1,7 +1,7 @@
 import { notFound } from '../domain/errors.ts';
 import type { ApiRequest, ApiResponse, Handler, RequestContext } from './types.ts';
 
-export type RouteHandler = (
+type RouteHandler = (
   req: ApiRequest,
   ctx: RequestContext,
   params: Record<string, string>,
