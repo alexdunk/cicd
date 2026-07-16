@@ -1,11 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { hashToken } from '../../src/domain/client.ts';
-import {
-  createHarness,
-  jsonBody,
-  KNOWN_FUNCTION,
-  UPLOAD_ONLY_TOKEN,
-} from '../helpers/test-harness.ts';
+import { createHarness, KNOWN_FUNCTION, UPLOAD_ONLY_TOKEN } from '../helpers/test-harness.ts';
 
 /**
  * Pipeline-level tests: the full decorator composition with fake adapters,
@@ -17,7 +12,7 @@ async function registerAvailableBuild(harness: ReturnType<typeof createHarness>)
   const register = await harness.send({
     method: 'POST',
     path: '/v1/builds',
-    body: jsonBody({ name: 'svc' }),
+    body: JSON.stringify({ name: 'svc' }),
   });
   const { build } = register.body as { build: { buildId: string; s3Key: string } };
   harness.artifacts.putObject(build.s3Key, 42);
@@ -31,7 +26,7 @@ describe('build endpoints', () => {
     const response = await harness.send({
       method: 'POST',
       path: '/v1/builds',
-      body: jsonBody({ name: 'orders-service', gitCommit: 'abc1234' }),
+      body: JSON.stringify({ name: 'orders-service', gitCommit: 'abc1234' }),
     });
     expect(response.status).toBe(201);
     const body = response.body as {
@@ -48,7 +43,7 @@ describe('build endpoints', () => {
     const response = await harness.send({
       method: 'POST',
       path: '/v1/builds',
-      body: jsonBody({ name: 'bad name with spaces!' }),
+      body: JSON.stringify({ name: 'bad name with spaces!' }),
     });
     expect(response.status).toBe(400);
     const body = response.body as { error: { code: string; details: { path: string }[] } };
@@ -61,7 +56,7 @@ describe('build endpoints', () => {
     const register = await harness.send({
       method: 'POST',
       path: '/v1/builds',
-      body: jsonBody({ name: 'svc' }),
+      body: JSON.stringify({ name: 'svc' }),
     });
     const { build } = register.body as { build: { buildId: string } };
 
@@ -107,7 +102,7 @@ describe('deployment endpoints', () => {
     const deploy = await harness.send({
       method: 'POST',
       path: '/v1/deployments',
-      body: jsonBody({ buildId, targetFunction: KNOWN_FUNCTION }),
+      body: JSON.stringify({ buildId, targetFunction: KNOWN_FUNCTION }),
     });
     expect(deploy.status).toBe(201);
     const { deployment } = deploy.body as {
@@ -151,7 +146,7 @@ describe('deployment endpoints', () => {
       method: 'POST',
       path: '/v1/deployments',
       headers: { authorization: 'Bearer ghost-token' },
-      body: jsonBody({ buildId, targetFunction: 'ghost-function' }),
+      body: JSON.stringify({ buildId, targetFunction: 'ghost-function' }),
     });
     expect(deploy.status).toBe(502);
     const { deployment } = deploy.body as {
@@ -174,14 +169,14 @@ describe('deployment endpoints', () => {
     const register = await harness.send({
       method: 'POST',
       path: '/v1/builds',
-      body: jsonBody({ name: 'svc' }),
+      body: JSON.stringify({ name: 'svc' }),
     });
     const { build } = register.body as { build: { buildId: string } };
 
     const deploy = await harness.send({
       method: 'POST',
       path: '/v1/deployments',
-      body: jsonBody({ buildId: build.buildId, targetFunction: KNOWN_FUNCTION }),
+      body: JSON.stringify({ buildId: build.buildId, targetFunction: KNOWN_FUNCTION }),
     });
     expect(deploy.status).toBe(400);
     expect(JSON.stringify(deploy.body)).toContain('pending_upload');
@@ -194,7 +189,7 @@ describe('deployment endpoints', () => {
       method: 'POST',
       path: '/v1/deployments',
       headers: { authorization: `Bearer ${UPLOAD_ONLY_TOKEN}` },
-      body: jsonBody({ buildId, targetFunction: KNOWN_FUNCTION }),
+      body: JSON.stringify({ buildId, targetFunction: KNOWN_FUNCTION }),
     });
     expect(deploy.status).toBe(403);
     expect(JSON.stringify(deploy.body)).toContain('deploy');
@@ -206,7 +201,7 @@ describe('deployment endpoints', () => {
     const deploy = await harness.send({
       method: 'POST',
       path: '/v1/deployments',
-      body: jsonBody({ buildId, targetFunction: 'not-allow-listed' }),
+      body: JSON.stringify({ buildId, targetFunction: 'not-allow-listed' }),
     });
     expect(deploy.status).toBe(403);
     expect(JSON.stringify(deploy.body)).toContain('not-allow-listed');
