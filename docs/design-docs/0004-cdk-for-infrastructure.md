@@ -14,7 +14,7 @@ AWS CDK v2 in TypeScript (`infra/`), synthesized with `npm run synth` via `tsx` 
 - ALB-to-Lambda target-group wiring is a first-class construct (`aws-elasticloadbalancingv2-targets.LambdaTarget`);
 - `cdk synth` validates the stack in CI without AWS credentials.
 
-Environment knobs are CDK context values (`stackName`, `certificateArn`, `deployTargetPrefix`), documented in `infra/app.ts` and docs/DEVELOPMENT.md.
+Environment knobs are CDK context values documented in `infra/app.ts` and `docs/DEVELOPMENT.md`. The later shared-ingress decision defines their current ownership and required domain/certificate contract; see [0005: Shared ALB path routing](0005-shared-alb-path-routing.md).
 
 ## Alternatives Considered
 

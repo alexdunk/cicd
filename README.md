@@ -5,7 +5,7 @@ An API for CI pipelines and deployment tooling (machine clients only) that does 
 1. **Upload a build**: register a build, receive a presigned S3 URL, upload the Lambda deployment zip directly to S3, and confirm completion.
 2. **Deploy a build**: point a target AWS Lambda function at the stored package (`UpdateFunctionCode`), with every state transition recorded and queryable.
 
-Runs as a single AWS Lambda behind an Application Load Balancer target group. Metadata lives in DynamoDB, packages in S3, authentication is per-client bearer tokens (stored as SHA-256 hashes) with scopes and per-function deploy allow-lists.
+Runs as a single AWS Lambda behind a target group on the platform's shared HTTPS Application Load Balancer (ALB). The deployed API is path-mounted at `/cicd` by default: the ALB removes that external prefix before invoking the Lambda, so application routes remain `/healthz` and `/v1/*`. Metadata lives in DynamoDB, packages in S3, authentication is per-client bearer tokens (stored as SHA-256 hashes) with scopes and per-function deploy allow-lists.
 
 ## Quick Start
 
@@ -26,6 +26,8 @@ curl -s -X POST "$BASE/v1/builds" \
 
 ## API Routes
 
+The table lists the application's internal routes. With the default deployed base URL `https://<domain>/cicd`, prepend `/cicd` to call them publicly: internal `/v1/builds` is external `/cicd/v1/builds`, and `/healthz` is `/cicd/healthz`. Local development has no mount prefix. Unmatched paths on the shared listener receive a fixed 404 and are not forwarded to this API.
+
 | Method | Path                              | Requires                               |
 | ------ | --------------------------------- | -------------------------------------- |
 | GET    | `/healthz`                        | nothing (ALB health check)             |
@@ -45,4 +47,9 @@ Start at [AGENTS.md](AGENTS.md) — the concise repository map. It links to prod
 
 ## Infrastructure
 
-Defined with AWS CDK in [`infra/`](infra/): DynamoDB table, artifact bucket, API Lambda, and ALB. `npm run synth` validates it without credentials; deployment is a credentialed manual step documented in [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#deploying-to-aws).
+Defined with AWS CDK in [`infra/`](infra/), split by ownership:
+
+- `SharedIngressStack` owns the VPC, internet-facing ALB, ACM certificate attachment, and the only HTTPS listener. It outputs `AlbDnsName`, `HttpsListenerArn`, and `DomainName`.
+- `DeployApiStack` owns DynamoDB, the artifact bucket, API Lambda, Lambda target group, and the `/cicd` listener rule. The rule matches `/cicd` and `/cicd/*`, rewrites `^/cicd/?(.*)$` to `/$1`, and defaults to shared-listener priority `100`.
+
+Build package bytes still upload directly to S3 through presigned URLs; they do not pass through the ALB and its approximately 1 MB request-body limit. `npm run synth -- -c domainName=api.example.com -c certificateArn=<arn>` validates the infrastructure without credentials. Deployment and DNS setup are credentialed operator steps documented in the [AWS deployment checklist](docs/AWS_DEPLOYMENT_CHECKLIST.md).

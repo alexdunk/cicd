@@ -1,6 +1,6 @@
 # CI/CD Build & Deployment API
 
-A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment package via a presigned S3 URL, then deploy it to an approved AWS Lambda function (`UpdateFunctionCode`), with an auditable deployment history. Runs as a single Lambda behind an ALB target group; metadata in DynamoDB, packages in S3.
+A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment package via a presigned S3 URL, then deploy it to an approved AWS Lambda function (`UpdateFunctionCode`), with an auditable deployment history. Runs as a single Lambda path-mounted at `/cicd` by default on a shared HTTPS ALB; the ALB strips the prefix so internal routes remain `/healthz` and `/v1/*`. Metadata lives in DynamoDB, packages in S3.
 
 ## Repository Map
 
@@ -12,7 +12,7 @@ A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment 
 | `src/http/`                                | Decorator pipeline, router, schemas, endpoints. Composition order lives in `src/http/pipeline.ts` only. |
 | `src/adapters/aws/` + `src/adapters/fake/` | Real and in-memory port implementations.                                                                |
 | `src/lambda.ts` / `src/local/`             | Production and local composition roots.                                                                 |
-| `infra/`                                   | AWS CDK stack (table, bucket, Lambda, ALB).                                                             |
+| `infra/`                                   | AWS CDK shared-ingress stack plus CI/CD service stack (table, bucket, Lambda, target group, route).     |
 | `tests/`                                   | Unit, pipeline, and integration tests.                                                                  |
 | `scripts/`                                 | Build, docs checks, client provisioning.                                                                |
 | `docs/`                                    | Knowledge base (see links below).                                                                       |
@@ -23,6 +23,7 @@ A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment 
 - Develop: `npm run dev` (local server, in-memory fakes, no AWS; prints URL + token)
 - Focused tests: `npm test` (or `npm run test:watch`)
 - Full verification: `npm run check` — required before merge; CI runs this plus `npm run synth`
+- Infrastructure synth: `npm run synth -- -c domainName=api.example.com -c certificateArn=<issued-acm-arn>`
 - Build Lambda bundle: `npm run build`
 - Everything else: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md#commands)
 
@@ -34,12 +35,14 @@ A TypeScript API for machine clients (CI pipelines): upload a Lambda deployment 
 4. Respect dependency direction (domain ← ports ← services ← http ← entrypoints); `npm run check:architecture` enforces it.
 5. Every deployment state change goes through `transitionDeployment` so the audit trail stays complete.
 6. When routes change, update the route table in `README.md` and other affected docs in the same change.
+7. The shared ingress owns the VPC, ALB, certificate attachment, HTTPS listener, and fixed 404 default. Service stacks own target groups and prefix-rewrite rules with unique listener priorities; `/cicd` reserves priority `100`.
 
 ## Knowledge Base
 
 - Product scope, vocabulary, journeys: [docs/PRODUCT.md](docs/PRODUCT.md)
 - Architecture and invariants: [ARCHITECTURE.md](ARCHITECTURE.md)
 - Setup, config, troubleshooting, deploy: [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)
+- AWS certificate, DNS, deployment, and cutover runbook: [docs/AWS_DEPLOYMENT_CHECKLIST.md](docs/AWS_DEPLOYMENT_CHECKLIST.md)
 - Test strategy and evidence: [docs/QUALITY.md](docs/QUALITY.md)
 - Auth model, secrets, trust boundaries: [docs/SECURITY.md](docs/SECURITY.md)
 - Decisions: [docs/design-docs/INDEX.md](docs/design-docs/INDEX.md) · Specs: [docs/product-specs/INDEX.md](docs/product-specs/INDEX.md)

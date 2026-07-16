@@ -1,7 +1,5 @@
 import * as cdk from 'aws-cdk-lib';
-import * as certificatemanager from 'aws-cdk-lib/aws-certificatemanager';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
-import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as elbv2 from 'aws-cdk-lib/aws-elasticloadbalancingv2';
 import * as targets from 'aws-cdk-lib/aws-elasticloadbalancingv2-targets';
 import * as iam from 'aws-cdk-lib/aws-iam';
@@ -9,15 +7,40 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import type { Construct } from 'constructs';
 
+export interface DeployApiStackProps extends cdk.StackProps {
+  readonly apiCode: lambda.Code;
+  readonly domainName: string;
+  readonly listenerArn: string;
+  readonly listenerRulePriority: number;
+  readonly pathPrefix: string;
+  readonly deployTargetPrefix: string;
+}
+
 /**
- * All infrastructure for the deploy API: DynamoDB table, artifact bucket,
- * API Lambda, and an ALB whose target group invokes the Lambda directly
- * (no API Gateway). Run `npm run build` first; the function code comes from
- * dist/lambda.
+ * Service-specific infrastructure for the deploy API.
+ *
+ * The shared ingress stack owns the ALB and HTTPS listener. This stack owns
+ * its target group and a path-scoped listener rule.
  */
 export class DeployApiStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props: DeployApiStackProps) {
     super(scope, id, props);
+
+    if (props.domainName.trim() === '') {
+      throw new Error('domainName must be a non-empty string');
+    }
+    if (!/^\/[a-z0-9][a-z0-9-]*$/.test(props.pathPrefix)) {
+      throw new Error(
+        'pathPrefix must start with "/" and contain only lowercase letters, numbers, and hyphens',
+      );
+    }
+    if (
+      !Number.isInteger(props.listenerRulePriority) ||
+      props.listenerRulePriority < 1 ||
+      props.listenerRulePriority > 50_000
+    ) {
+      throw new Error('listenerRulePriority must be an integer from 1 through 50000');
+    }
 
     // Metadata store: single-table layout documented in
     // docs/design-docs/0002-storage-model.md and mirrored in
@@ -53,7 +76,7 @@ export class DeployApiStack extends cdk.Stack {
       runtime: lambda.Runtime.NODEJS_22_X,
       architecture: lambda.Architecture.ARM_64,
       handler: 'index.handler',
-      code: lambda.Code.fromAsset('dist/lambda'),
+      code: props.apiCode,
       memorySize: 512,
       timeout: cdk.Duration.seconds(120), // deploys wait for UpdateFunctionCode
       environment: {
@@ -72,42 +95,17 @@ export class DeployApiStack extends cdk.Stack {
 
     // Deployable targets are bounded at the IAM layer by a function-name
     // prefix; the per-client allow-list in DynamoDB narrows within it.
-    const deployTargetPrefix =
-      (this.node.tryGetContext('deployTargetPrefix') as string | undefined) ?? 'deploy-target-';
     apiFunction.addToRolePolicy(
       new iam.PolicyStatement({
         actions: ['lambda:UpdateFunctionCode', 'lambda:GetFunction'],
         resources: [
-          `arn:${this.partition}:lambda:${this.region}:${this.account}:function:${deployTargetPrefix}*`,
+          `arn:${this.partition}:lambda:${this.region}:${this.account}:function:${props.deployTargetPrefix}*`,
         ],
       }),
     );
 
-    // Minimal VPC for the ALB: public subnets only, no NAT (no recurring cost).
-    const vpc = new ec2.Vpc(this, 'Vpc', {
-      maxAzs: 2,
-      natGateways: 0,
-      subnetConfiguration: [{ name: 'public', subnetType: ec2.SubnetType.PUBLIC }],
-    });
-
-    const alb = new elbv2.ApplicationLoadBalancer(this, 'Alb', {
-      vpc,
-      internetFacing: true,
-    });
-
-    // HTTPS when a certificate is supplied; plain HTTP otherwise (test only).
-    const certificateArn = this.node.tryGetContext('certificateArn') as string | undefined;
-    const listener = certificateArn
-      ? alb.addListener('Https', {
-          port: 443,
-          certificates: [
-            certificatemanager.Certificate.fromCertificateArn(this, 'Cert', certificateArn),
-          ],
-        })
-      : alb.addListener('Http', { port: 80 });
-
-    listener.addTargets('Api', {
-      targets: [new targets.LambdaTarget(apiFunction)],
+    const apiTargetGroup = new elbv2.ApplicationTargetGroup(this, 'ApiTargetGroup', {
+      targetType: elbv2.TargetType.LAMBDA,
       healthCheck: {
         enabled: true,
         path: '/healthz',
@@ -115,9 +113,42 @@ export class DeployApiStack extends cdk.Stack {
         healthyHttpCodes: '200',
       },
     });
+    apiTargetGroup.addTarget(new targets.LambdaTarget(apiFunction));
+
+    new elbv2.CfnListenerRule(this, 'ApiRule', {
+      listenerArn: props.listenerArn,
+      priority: props.listenerRulePriority,
+      conditions: [
+        {
+          field: 'path-pattern',
+          pathPatternConfig: {
+            values: [props.pathPrefix, `${props.pathPrefix}/*`],
+          },
+        },
+      ],
+      transforms: [
+        {
+          type: 'url-rewrite',
+          urlRewriteConfig: {
+            rewrites: [
+              {
+                regex: `^${props.pathPrefix}/?(.*)$`,
+                replace: '/$1',
+              },
+            ],
+          },
+        },
+      ],
+      actions: [
+        {
+          type: 'forward',
+          targetGroupArn: apiTargetGroup.targetGroupArn,
+        },
+      ],
+    });
 
     new cdk.CfnOutput(this, 'ApiUrl', {
-      value: `${certificateArn ? 'https' : 'http'}://${alb.loadBalancerDnsName}`,
+      value: `https://${props.domainName}${props.pathPrefix}`,
     });
     new cdk.CfnOutput(this, 'TableName', { value: table.tableName });
     new cdk.CfnOutput(this, 'ArtifactBucketName', { value: artifactBucket.bucketName });
