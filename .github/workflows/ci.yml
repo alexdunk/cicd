@@ -19,4 +19,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - name: CDK synth (validates infrastructure code)
-        run: npm run synth
+        run: >
+          npm run synth --
+          -c domainName=ci.example.com
+          -c certificateArn=arn:aws:acm:us-east-1:111111111111:certificate/00000000-0000-0000-0000-000000000000
